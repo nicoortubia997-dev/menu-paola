@@ -192,7 +192,7 @@ var CONFIG={
  document.addEventListener("click",function(e){var s=e.target.closest("[data-s]");if(!s)return;var a=Q[s.dataset.k],i=+s.dataset.d;a[i]=Math.max(0,a[i]+(+s.dataset.s));err("");menu();draw();if(s.dataset.s==="1"){var cb=$("cbar");cb.classList.remove("pulse");void cb.offsetWidth;cb.classList.add("pulse")}});
  function abrir(){err("");draw();$("car").showModal()}$("cb").onclick=abrir;$("cbar").onclick=abrir;$("cx").onclick=function(){$("car").close()};
  $("en").onchange=function(){$("dl").hidden=this.value!=="Domicilio";draw()};
- $("env").onclick=function(){var nc=sum(Q.p),nd=sum(Q.d);if(!nc+sum(Q.b)){err("Agrega algo al pedido primero");return}
+ $("env").onclick=function(){var nc=sum(Q.p),nd=sum(Q.d);if(nc+sum(Q.b)===0){err("Agrega algo al pedido primero");return}
   if(nc!==nd){err("Elige "+nc+" postre"+(nc===1?"":"s")+" (uno por combo). Cierra este cuadro, elige los postres y vuelve a enviar.");return}
   var dom=$("en").value==="Domicilio";if(dom&&!$("dr").value.trim()){err("Escribe la dirección de entrega");return}
   var l=[];C.platos.forEach(function(p,i){if(Q.p[i])l.push("• "+Q.p[i]+" x "+p.n+" (con pan)")});
