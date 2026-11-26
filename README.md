@@ -11,7 +11,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#1b1917}
 html{scroll-behavior:smooth;scroll-padding-top:calc(64px + env(safe-area-inset-top,0px))}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--cream);font-family:var(--body);line-height:1.5}
+body{padding-bottom:100px;margin:0;background:var(--bg);color:var(--cream);font-family:var(--body);line-height:1.5}
 .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:#12100f;border-bottom:3px solid var(--red)}
 .logo{font-family:var(--disp);font-size:1.7rem;letter-spacing:2px}.logo i{font-family:var(--script);font-style:normal;color:var(--amber);font-size:1.9rem;letter-spacing:0;margin-right:6px}
 button{font:inherit;cursor:pointer}
@@ -45,6 +45,7 @@ h2 i{font-family:var(--script);font-style:normal;color:var(--amber);font-size:1.
 #pc{font-family:var(--body);font-size:.95rem;color:var(--cream);letter-spacing:0;margin-left:8px}
 .cta2 .pill.g{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 2px var(--cream)}
 .box.hoy{border-top-color:var(--amber);background:#322b25}.box ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}.box .big{font-family:var(--disp);font-size:2.4rem;line-height:1;color:var(--amber);margin:0}
+.cartbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:40;width:min(calc(100% - 24px),440px);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--amber);color:#1b1917;border:0;border-radius:40px;padding:14px 22px;font-weight:700;font-size:1.1rem;box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 0 3px rgba(18,16,15,.85)}.cartbar b{font-family:var(--disp);font-size:1.6rem;letter-spacing:1px;font-weight:400}.cartbar.pulse{animation:pl .5s}@keyframes pl{50%{transform:translateX(-50%) scale(1.07)}}@media(prefers-reduced-motion:reduce){.cartbar.pulse{animation:none}}
 .grp{margin-bottom:24px}.grp h3{font-family:var(--disp);font-weight:400;font-size:1.5rem;letter-spacing:1.5px;color:var(--amber);margin:0 0 10px}
 .opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .opt{text-align:left;background:var(--card);color:var(--cream);border:2px solid var(--line);border-left:5px solid var(--red);padding:14px 16px;min-height:48px}
@@ -62,7 +63,7 @@ summary{cursor:pointer;font-weight:700}details[open] summary{color:var(--amber)}
 .cta2{padding:70px 24px;text-align:center;background:var(--red);clip-path:polygon(0 24px,100% 0,100% 100%,0 100%)}
 .cta2 h2 i{color:var(--cream)}.cta2 p{margin:0 auto 20px;max-width:46ch}.cta2 .pill{background:#12100f;color:var(--amber)}
 .ft{background:#0d0c0b;color:var(--muted);padding:26px 24px;text-align:center;font-size:.9rem}
-.wa{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:30}
+.wa{position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:30}
 dialog{background:#1b1917;color:var(--cream);border:3px solid var(--amber);padding:0;width:calc(100% - 24px);max-width:480px;max-height:90vh;overflow:auto}
 dialog::backdrop{background:rgba(0,0,0,.75)}
 .dh{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#12100f;font-family:var(--disp);font-size:1.5rem;letter-spacing:1.5px}
@@ -123,7 +124,9 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var
  <label id="dl" hidden>Dirección de entrega<input id="dr" type="text"></label>
  <label>Hora de retiro o entrega<select id="hr"></select></label>
  <label>Forma de pago<select id="pg"><option>Transferencia</option><option>Efectivo</option></select></label>
+ <p id="err" role="alert" style="color:#ff7a5c;font-weight:700;margin:0 0 10px" hidden></p>
  <button class="pill add" id="env" type="button">Enviar pedido por WhatsApp</button></div></dialog>
+<button class="cartbar" id="cbar" type="button"><span>🛒 Ver mi pedido (<span id="cn3">0</span>)</span><b id="cbt">$0</b></button>
 <div id="toast">Agregado al pedido</div>
 <a class="wa" id="fw" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
 
@@ -178,24 +181,25 @@ var CONFIG={
   var nc=sum(Q.p),nd=sum(Q.d);$("pc").textContent=nc?" · "+nd+" de "+nc+" elegidos":"";$("pc").style.color=nc&&nd!==nc?"#ff7a5c":"var(--cream)"}
  function envio(){return $("en").value==="Domicilio"&&(sum(Q.p)+sum(Q.b))?C.envio:0}
  function total(){return sum(Q.p)*C.precio+C.bebidas.reduce(function(s,b,i){return s+b.p*Q.b[i]},0)+envio()}
+ function err(m){var e=$("err");e.textContent=m;e.hidden=!m}
  function toast(t){var e=$("toast");e.textContent=t;e.classList.add("on");setTimeout(function(){e.classList.remove("on")},1500)}
- function draw(){$("cn").textContent=sum(Q.p)+sum(Q.b);$("ct").textContent=money(total());var h="";
+ function draw(){$("cn").textContent=$("cn3").textContent=sum(Q.p)+sum(Q.b);$("cbt").textContent=money(total());$("ct").textContent=money(total());var h="";
   C.platos.forEach(function(p,i){if(Q.p[i])h+='<div class="li"><div><b>'+p.n+'</b><br>'+money(C.precio*Q.p[i])+'</div>'+step("p",i,Q.p[i],p.n)+'</div>'});
   C.postres.forEach(function(p,i){if(Q.d[i])h+='<div class="li"><div><b>Postre: '+p.n+'</b><br>Incluido</div>'+step("d",i,Q.d[i],p.n)+'</div>'});
   C.bebidas.forEach(function(b,i){if(Q.b[i])h+='<div class="li"><div><b>'+b.n+'</b><br>'+money(b.p*Q.b[i])+'</div>'+step("b",i,Q.b[i],b.n)+'</div>'});
   $("cl").innerHTML=h||'<p style="color:var(--muted);text-align:center">Tu pedido está vacío.</p>';
   var e=envio();$("evl").hidden=!e;$("ev").textContent=money(e)}
- document.addEventListener("click",function(e){var s=e.target.closest("[data-s]");if(!s)return;var a=Q[s.dataset.k],i=+s.dataset.d;a[i]=Math.max(0,a[i]+(+s.dataset.s));menu();draw()});
- $("cb").onclick=function(){draw();$("car").showModal()};$("cx").onclick=function(){$("car").close()};
+ document.addEventListener("click",function(e){var s=e.target.closest("[data-s]");if(!s)return;var a=Q[s.dataset.k],i=+s.dataset.d;a[i]=Math.max(0,a[i]+(+s.dataset.s));err("");menu();draw();if(s.dataset.s==="1"){var cb=$("cbar");cb.classList.remove("pulse");void cb.offsetWidth;cb.classList.add("pulse")}});
+ function abrir(){err("");draw();$("car").showModal()}$("cb").onclick=abrir;$("cbar").onclick=abrir;$("cx").onclick=function(){$("car").close()};
  $("en").onchange=function(){$("dl").hidden=this.value!=="Domicilio";draw()};
- $("env").onclick=function(){var nc=sum(Q.p),nd=sum(Q.d);if(!nc+sum(Q.b)){toast("Agrega algo al pedido primero");return}
-  if(nc!==nd){toast("Elige "+nc+" postre"+(nc===1?"":"s")+" (uno por combo)");return}
-  var dom=$("en").value==="Domicilio";if(dom&&!$("dr").value.trim()){toast("Escribe la dirección de entrega");return}
+ $("env").onclick=function(){var nc=sum(Q.p),nd=sum(Q.d);if(!nc+sum(Q.b)){err("Agrega algo al pedido primero");return}
+  if(nc!==nd){err("Elige "+nc+" postre"+(nc===1?"":"s")+" (uno por combo). Cierra este cuadro, elige los postres y vuelve a enviar.");return}
+  var dom=$("en").value==="Domicilio";if(dom&&!$("dr").value.trim()){err("Escribe la dirección de entrega");return}
   var l=[];C.platos.forEach(function(p,i){if(Q.p[i])l.push("• "+Q.p[i]+" x "+p.n+" (con pan)")});
   C.postres.forEach(function(p,i){if(Q.d[i])l.push("• Postre: "+Q.d[i]+" x "+p.n)});
   C.bebidas.forEach(function(b,i){if(Q.b[i])l.push("• "+Q.b[i]+" x "+b.n)});
   var t="Hola, quiero pedir:\n"+l.join("\n")+(dom?"\nEnvío: "+money(C.envio):"")+"\nTotal: "+money(total())+"\nEntrega: "+$("en").value+(dom?" ("+$("dr").value+")":"")+"\nHora: "+$("hr").value+"\nPago: "+$("pg").value+($("nm").value?"\nNombre: "+$("nm").value:"");
-  window.open("https://wa.me/"+C.whatsapp+"?text="+E(t),"_blank")};
+  err("");var u="https://wa.me/"+C.whatsapp+"?text="+E(t);if(!window.open(u,"_blank")){location.href=u}};
  var ids=["inicio","menu","semana","pago","ubicacion","preguntas","contacto"],tabs=document.querySelectorAll("#tabs a");
  window.addEventListener("scroll",function(){var c="inicio";ids.forEach(function(i){if($(i).getBoundingClientRect().top<160)c=i});tabs.forEach(function(x){x.classList.toggle("on",x.getAttribute("href")==="#"+c)})});
  menu();draw();
